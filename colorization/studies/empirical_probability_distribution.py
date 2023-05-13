@@ -9,39 +9,13 @@ from skimage.color import rgb2lab
 import cv2
 import numpy as np
 
-
-def load_image(img_path):
-    img_path = str(img_path)
-    img = cv2.imread(img_path, flags=cv2.IMREAD_COLOR)
-    img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)
-    return img
-
-
-def _figure_to_array(fig):
-    fig.tight_layout()
-    fig.canvas.draw()
-    heatmap = np.array(fig.canvas.renderer._renderer)
-    heatmap = cv2.cvtColor(src=heatmap, code=cv2.COLOR_BGRA2BGR)
-    return heatmap
-
-
-def _to_pil(img):
-    if not isinstance(img, Image.Image):
-        img = Image.fromarray(img)
-    return img
-
-
-def show_image(img):
-    copied_img = img.copy()
-    copied_img = _to_pil(copied_img)
-    copied_img.show()
-
-
-def save_image(img, path):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    _to_pil(img).save(str(path))
+from process_images import (
+    load_image,
+    _to_pil,
+    show_image,
+    save_image,
+    _figure_to_array
+)
 
 
 def ab_color_space_histogram(data_dir):
@@ -86,7 +60,9 @@ def empirical_probability_distribution_plot(hist):
 
 if __name__ == "__main__":
     hist = ab_color_space_histogram("/Users/jongbeomkim/Documents/datasets/VOCdevkit/VOC2012/JPEGImages")
+    # hist = ab_color_space_histogram("/Users/jongbeomkim/Desktop/workspace/visual_representation_learning/simclr/voc2012_image_views")
     prob_dist_plot = empirical_probability_distribution_plot(hist)
+    show_image(prob_dist_plot)
     save_image(
         img=prob_dist_plot,
         path="/Users/jongbeomkim/Desktop/workspace/machine_learning/computer_vision/visual_representation_learning/colorization/studies/voc2012_empirical_probability_distribution.jpg"

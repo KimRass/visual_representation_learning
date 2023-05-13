@@ -15,31 +15,21 @@ from PIL import Image
 from pathlib import Path
 import numpy as np
 
+from object_counting.model import (
+    AlexNetFeatureExtractor,
+    CountingFeatureExtractor
+)
+from process_images import (
+    load_image,
+    _to_pil,
+    show_image
+)
 
 BATCH_SIZE = 16
 IMG_SIZE = 256
 CROP_SIZE = 224
 TILE_SIZE = CROP_SIZE // 2
 GRAY_PROB = 0.67
-
-
-def load_image(img_path):
-    img_path = str(img_path)
-    img = cv2.imread(img_path, flags=cv2.IMREAD_COLOR)
-    img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)
-    return img
-
-
-def _to_pil(img):
-    if not isinstance(img, Image.Image):
-        img = Image.fromarray(img)
-    return img
-
-
-def show_image(img):
-    copied_img = img.copy()
-    copied_img = _to_pil(copied_img)
-    copied_img.show()
 
 
 def batched_image_to_grid(image, n_cols, normalize=False, mean=(0.485, 0.456, 0.406), variance=(0.229, 0.224, 0.225)):
@@ -63,78 +53,17 @@ def batched_image_to_grid(image, n_cols, normalize=False, mean=(0.485, 0.456, 0.
     return grid
 
 
-class AlexNetFeatureExtractor(nn.Module):
-    def __init__(self):
-        super().__init__()
-
-        self.conv1 = nn.Conv2d(3, 96, kernel_size=11, stride=4)
-        self.conv2 = nn.Conv2d(96, 256, kernel_size=5, padding=2)
-        self.conv3 = nn.Conv2d(256, 384, kernel_size=3, padding=1)
-        self.conv4 = nn.Conv2d(384, 384, kernel_size=3, padding=1)
-        self.conv5 = nn.Conv2d(384, 256, kernel_size=3, padding=1)
-        self.relu = nn.ReLU()
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2)
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-        x = self.conv2(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-        x = self.conv3(x)
-        x = self.relu(x)
-        x = self.conv4(x)
-        x = self.relu(x)
-        x = self.conv5(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-        return x
-
-
-class CountingFeatureExtractor(nn.Module):
-    def __init__(self, feat_extractor, n_elems=1000):
-        super().__init__()
-
-        self.feat_extractor = feat_extractor
-
-        self.flatten = nn.Flatten(start_dim=1, end_dim=3)
-        # self.fc6 = nn.Linear(256 * 6 * 6, 4096)
-        self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.5)
-        self.fc7 = nn.Linear(4096, 4096)
-        self.fc8 = nn.Linear(4096, n_elems)
-
-    def forward(self, x):
-        x = self.feat_extractor(x)
-
-        x = self.flatten(x)
-        x = self.dropout(x)
-
-        x = nn.Linear(x.shape[1], 4096)(x) # fc6
-        x = self.relu(x)
-        x = self.dropout(x)
-
-        x = self.fc7(x)
-        x = self.relu(x)
-        x = self.dropout(x)
-
-        x = self.fc8(x)
-        x = self.relu(x)
-        x = self.dropout(x)
-        return x
-
-
 class ContrastiveLoss(nn.Module):
-    def __init__(self, counting_feat_extractor, batch_size, crop_size=CROP_SIZE, M=10):
+    def __init__(self, counting_feat_extr, batch_size, crop_size=CROP_SIZE, M=10):
         super().__init__()
 
-        self.counting_feat_extractor = counting_feat_extractor
+        self.counting_feat_extr = counting_feat_extr
         self.crop_size = crop_size
         self.M = M
 
         self.tile_size = self.crop_size // 2
         self.resize = T.Resize((self.tile_size, self.tile_size), antialias=True)
+        # 아래와 같은 방법보다 SimCLR에서처럼 Matrix를 구성하는 게 더 좋을 것 같습니다.
         ids = torch.as_tensor([(i, j) for i, j in product(range(batch_size), range(batch_size)) if i != j])
         self.x_ids, self.y_ids = ids[:, 0], ids[:, 1]
 
@@ -145,11 +74,11 @@ class ContrastiveLoss(nn.Module):
         tile4 = image[:, :, self.tile_size:, self.tile_size:]
         resized = self.resize(image)
 
-        tile1_feat = self.counting_feat_extractor(tile1)
-        tile2_feat = self.counting_feat_extractor(tile2)
-        tile3_feat = self.counting_feat_extractor(tile3)
-        tile4_feat = self.counting_feat_extractor(tile4)
-        resized_feat = self.counting_feat_extractor(resized)
+        tile1_feat = self.counting_feat_extr(tile1)
+        tile2_feat = self.counting_feat_extr(tile2)
+        tile3_feat = self.counting_feat_extr(tile3)
+        tile4_feat = self.counting_feat_extr(tile4)
+        resized_feat = self.counting_feat_extr(resized)
 
         summed_feat = (tile1_feat + tile2_feat + tile3_feat + tile4_feat)
         loss1 = F.mse_loss(resized_feat[self.x_ids], summed_feat[self.x_ids], reduction="sum")
@@ -190,7 +119,9 @@ if __name__ == "__main__":
         ]
     )
     transform2 = T.RandomGrayscale(GRAY_PROB)
-    ds = CustomDataset(root="/Users/jongbeomkim/Documents/datasets/VOCdevkit/VOC2012/JPEGImages", transform=transform1)
+    ds = CustomDataset(
+        root="/Users/jongbeomkim/Documents/datasets/VOCdevkit/VOC2012/JPEGImages", transform=transform1
+    )
     dl = DataLoader(dataset=ds, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
     for batch, image in enumerate(dl, start=1):
         image = transform2(image)
@@ -198,9 +129,9 @@ if __name__ == "__main__":
         # grid = batched_image_to_grid(image=image, n_cols=int(BATCH_SIZE ** 0.5))
         # show_image(grid)
 
-        sample_feat_extractor = AlexNetFeatureExtractor()
-        counting_feat_extractor = CountingFeatureExtractor(feat_extractor=sample_feat_extractor)
-        criterion = ContrastiveLoss(counting_feat_extractor=counting_feat_extractor, batch_size=BATCH_SIZE)
+        sample_feat_extr = AlexNetFeatureExtractor()
+        counting_feat_extr = CountingFeatureExtractor(feat_extr=sample_feat_extr)
+        criterion = ContrastiveLoss(counting_feat_extr=counting_feat_extr, batch_size=BATCH_SIZE)
 
         print(criterion(image))
         criterion.x_ids

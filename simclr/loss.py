@@ -98,9 +98,9 @@ if __name__ == "__main__":
         #     path=f"""/Users/jongbeomkim/Desktop/workspace/machine_learning/computer_vision/visual_representation_learning/simclr/voc2012_samples/{batch}.jpg"""
         # )
         
-        feat_extractor = ResNet50FeatureMapExtractor()
+        feat_extr = ResNet50FeatureMapExtractor()
         prj_head = ProjectionHead()
-        feat_map = feat_extractor.get_feature_map(view)
+        feat_map = feat_extr.get_feature_map(view)
         feat_map = prj_head(feat_map)
         
         loss = criterion(feat_map)

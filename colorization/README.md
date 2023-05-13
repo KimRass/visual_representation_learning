@@ -91,7 +91,5 @@ $$f(x, y) = \frac{1}{2\pi\sigma^{2}}\exp\bigg(-\frac{(x - \mu_{x})^{2} + (x - \m
 - [23] [Learning Representations for Automatic Colorization](https://arxiv.org/pdf/1603.06668.pdf)
 
 # TO DO
-## Paper Reading
-- "Studies" 파트 내용 정리
 ## PyTorch Implementation
-- Empirical distribution of pixels in ab space
+- Loss function 구현

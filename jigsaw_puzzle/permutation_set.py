@@ -14,11 +14,10 @@ def _reorder_cells(cells, b):
     Args:
         cells (torch.Tensor): tiles to re-order with the shape `(b * 9, c, h // 3, w // 3)`
         b (int): Batch size
-
     Returns:
         torch.Tensor: Re-ordered tiles
     """
-    return torch.cat([cells[i:: b] for i in range(4)], axis=0)
+    return torch.cat([cells[i:: b] for i in range(b)], axis=0)
 
 
 def _independently_normalize_each_tile(tiles):
@@ -31,12 +30,12 @@ def _independently_normalize_each_tile(tiles):
     return copied_tiles
 
 
-def get_permutated_tiles(images, perm_set, crop_mode: Literal["center", "random"]="random", tile_size=64):
+def get_permutated_tiles(image, perm_set, crop_mode: Literal["center", "random"]="random", tile_size=64):
     # `(b, c, h, w)`
-    b, _, h, w = images.shape
+    b, _, h, w = image.shape
 
     # `(b * 3, c, h // 3, w)`
-    col_cells = torch.cat(torch.split(images, h // 3, dim=2), axis=0)
+    col_cells = torch.cat(torch.split(image, h // 3, dim=2), axis=0)
     # `(b * 9, c, h // 3, w // 3)`
     cells = torch.cat(torch.split(col_cells, w // 3, dim=3), axis=0)
     cells = _reorder_cells(cells=cells, b=b)

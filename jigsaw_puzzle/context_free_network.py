@@ -1,14 +1,6 @@
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision
-import torchvision.transforms as T
-from torchvision.models import alexnet, AlexNet_Weights
-from torchviz import make_dot
-import cv2
-from PIL import Image
-import random
 
 
 class ContextFreeNetwork(nn.Module):

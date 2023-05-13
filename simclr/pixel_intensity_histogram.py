@@ -2,7 +2,6 @@
     # https://zahid-parvez.medium.com/image-histograms-in-opencv-python-9fe3a7e0ae4f
 
 import cv2
-from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 from moviepy.video.io.bindings import mplfig_to_npimage
@@ -43,6 +42,6 @@ def get_pixel_intensity_histogram(img):
     return arr
 
 
-img_path = "/Users/jongbeomkim/Documents/datasets/imagenet-mini/train/n01440764/n01440764_10845.JPEG"
-img = load_image(img_path)
-
+if __name__ == "__main__":
+    img_path = "/Users/jongbeomkim/Documents/datasets/imagenet-mini/train/n01440764/n01440764_10845.JPEG"
+    img = load_image(img_path)
