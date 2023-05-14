@@ -60,7 +60,7 @@ class FeatureMapExtractor():
         return self.feat_map
 
 
-def convert_feature_map_to_attention_map(feat_map, img, mode=Literal["bw", "jet"], p=1):
+def feature_map_to_attention_map(feat_map, img, mode=Literal["bw", "jet"], p=1):
     feat_map = feat_map.sum(axis=1)
     feat_map = feat_map ** p
 
@@ -80,29 +80,28 @@ if __name__ == "__main__":
     model = alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
     print_all_layers(model)
 
-    img = load_image("https://hips.hearstapps.com/ghk.h-cdn.co/assets/16/08/gettyimages-147786673.jpg?crop=0.4444444444444445xw:1xh;center,top&resize=980:*")
+    img = load_image(
+        "https://hips.hearstapps.com/ghk.h-cdn.co/assets/16/08/gettyimages-147786673.jpg?crop=0.4444444444444445xw:1xh;center,top&resize=980:*"
+    )
     transform = T.Compose(
         [
             T.ToTensor(),
             T.Resize((227, 227)),
-            T.Normalize(
-                mean=(0.485, 0.456, 0.406),
-                std=(0.229, 0.224, 0.225)
-            )
+            T.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
         ]
     )
     image = transform(img).unsqueeze(0)
 
-    extractor = FeatureMapExtractor(model)
-    feat_map1 = extractor.get_feature_map(image=image, layer="features.2")
-    feat_map2 = extractor.get_feature_map(image=image, layer="features.5")
-    feat_map3 = extractor.get_feature_map(image=image, layer="features.12")
+    feat_map_extr = FeatureMapExtractor(model)
+    feat_map1 = feat_map_extr.get_feature_map(image=image, layer="features.2")
+    feat_map2 = feat_map_extr.get_feature_map(image=image, layer="features.5")
+    feat_map3 = feat_map_extr.get_feature_map(image=image, layer="features.12")
 
     # Below are, from the paper, 'Conv1 27 × 27', 'Conv3 13 × 13' and 'Conv5 6 × 6' respectively.
-    attn_map1 = convert_feature_map_to_attention_map(feat_map=feat_map1, img=img, mode="bw", p=1)
-    attn_map2 = convert_feature_map_to_attention_map(feat_map=feat_map2, img=img, mode="bw", p=2)
-    attn_map3 = convert_feature_map_to_attention_map(feat_map=feat_map3, img=img, mode="bw", p=4)
+    attn_map1 = feature_map_to_attention_map(feat_map=feat_map1, img=img, mode="bw", p=1)
+    attn_map2 = feature_map_to_attention_map(feat_map=feat_map2, img=img, mode="bw", p=2)
+    attn_map3 = feature_map_to_attention_map(feat_map=feat_map3, img=img, mode="bw", p=4)
     
-    save_image(img=attn_map1, path="/Users/jongbeomkim/Desktop/workspace/machine_learning/computer_vision/self_supervised_learning/image_rotation/attention_map_samples/golden_retriever_conv1_27.jpg")
-    save_image(img=attn_map2, path="/Users/jongbeomkim/Desktop/workspace/machine_learning/computer_vision/self_supervised_learning/image_rotation/attention_map_samples/golden_retriever_conv3_13.jpg")
-    save_image(img=attn_map3, path="/Users/jongbeomkim/Desktop/workspace/machine_learning/computer_vision/self_supervised_learning/image_rotation/attention_map_samples/golden_retriever_conv5_6.jpg")
+    save_image(img=attn_map1, path="attention_map_examples/golden_retriever_conv1_27.jpg")
+    save_image(img=attn_map2, path="attention_map_examples/golden_retriever_conv3_13.jpg")
+    save_image(img=attn_map3, path="attention_map_examples/golden_retriever_conv5_6.jpg")
