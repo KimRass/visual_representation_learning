@@ -9,7 +9,7 @@ from skimage.color import rgb2lab
 import cv2
 import numpy as np
 
-from process_images import (
+from image_utils import (
     load_image,
     _to_pil,
     show_image,

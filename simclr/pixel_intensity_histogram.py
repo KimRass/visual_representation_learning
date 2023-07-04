@@ -6,9 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from moviepy.video.io.bindings import mplfig_to_npimage
 
-from process_images import (
-    load_image
-)
+from image_utils import load_image
 
 
 def get_channel_wise_pixel_intensity_histogram(img):

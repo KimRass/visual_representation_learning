@@ -8,18 +8,12 @@ import torchvision
 import torchvision.transforms as T
 from torchvision.models import alexnet
 from torch.utils.data import Dataset, DataLoader
-from torchvision.datasets import ImageNet
 from itertools import product
-import cv2
-from PIL import Image
 from pathlib import Path
 import numpy as np
 
-from object_counting.model import (
-    AlexNetFeatureExtractor,
-    CountingFeatureExtractor
-)
-from process_images import (
+from object_counting.model import AlexNetFeatureExtractor, CountingFeatureExtractor
+from image_utils import (
     load_image,
     _to_pil,
     show_image

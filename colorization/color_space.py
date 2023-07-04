@@ -11,7 +11,7 @@ import torchvision.transforms as T
 import cv2
 from PIL import Image
 
-from process_images import (
+from image_utils import (
     load_image,
     show_image,
     _to_pil,

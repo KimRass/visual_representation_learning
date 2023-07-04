@@ -5,18 +5,9 @@ import torchvision.transforms as T
 from kornia.augmentation import RandomCrop, Resize, RandomGrayscale
 import random
 
-from jigsaw_puzzle.context_free_network import (
-    ContextFreeNetwork
-)
-from jigsaw_puzzle.permutation_set import (
-    get_permutation_set,
-    get_permutated_tiles
-)
-from process_images import (
-    load_image,
-    show_image,
-    save_image
-)
+from jigsaw_puzzle.context_free_network import ContextFreeNetwork
+from jigsaw_puzzle.permutation_set import get_permutation_set, get_permutated_tiles
+from image_utils import load_image, show_image, save_image
 
 
 def _denormalize_array(img):

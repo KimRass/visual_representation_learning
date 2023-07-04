@@ -9,10 +9,7 @@ from torchvision.models import resnet50, ResNet50_Weights
 from torch.utils.data import DataLoader
 import ssl
 
-from .data_augmentation import (
-    get_image_transformer,
-    CustomDataset
-)
+from simclr.data_augmentation import get_image_transformer, CustomDataset
 
 ssl._create_default_https_context = ssl._create_unverified_context
 

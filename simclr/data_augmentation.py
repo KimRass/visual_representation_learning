@@ -5,7 +5,7 @@ from torch.utils.data import Dataset, DataLoader
 from pathlib import Path
 import numpy as np
 
-from process_images import (
+from image_utils import (
     load_image,
     _to_pil,
     show_image

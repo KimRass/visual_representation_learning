@@ -4,7 +4,7 @@ import torchvision.transforms as T
 from torchvision.models import alexnet, AlexNet_Weights
 from typing import Literal
 
-from process_images import (
+from image_utils import (
     load_image,
     show_image,
     save_image,
